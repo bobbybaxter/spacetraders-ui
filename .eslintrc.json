@@ -1,3 +1,73 @@
 {
-  "extends": "next/core-web-vitals"
+  "env": {
+    "es2021": true,
+    "node": true,
+    "jest": true
+  },
+  "extends": [
+    "next/core-web-vitals",
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:prettier/recommended"
+  ],
+  "ignorePatterns": [
+    "**/node_modules/*",
+    "**.css"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "classes": true,
+      "jsx": false
+    }
+  },
+  "plugins": [
+    "@typescript-eslint",
+    "simple-import-sort",
+    "import",
+    "prettier"
+  ],
+  "rules": {
+    "@typescript-eslint/no-empty-function": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "import/first": "error",
+    "import/newline-after-import": "error",
+    "import/no-duplicates": "error",
+    "max-len": "off",
+    "no-empty-function": "off",
+    "no-unused-vars": [
+      "error",
+      {
+        "args": "none",
+        "destructuredArrayIgnorePattern": "[A-Z]",
+        "ignoreRestSiblings": true
+      }
+    ],
+    "simple-import-sort/imports": "error"
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/*.+(ts|tsx|js|jsx)"
+      ],
+      "rules": {
+        "simple-import-sort/imports": [
+          "error",
+          {
+            "groups": [
+              [
+                "^\\u0000",
+                "^node:",
+                "^@?\\w",
+                "^",
+                "^\\."
+              ]
+            ]
+          }
+        ]
+      }
+    }
+  ]
 }
