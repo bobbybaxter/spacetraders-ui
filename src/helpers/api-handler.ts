@@ -26,7 +26,7 @@ export async function apiHandler({
     if (!response.ok) {
       const body = await response.json();
       if (body && body.error) {
-        return res.status(response.status).json(body.error);
+        return res.status(response.status).json(body);
       } else {
         return res.status(response.status).end(response.statusText);
       }

@@ -20,7 +20,7 @@ export default async function handler(
       const body = await response.json();
       console.info(`token: ${body.data.token}`);
       if (body && body.error) {
-        return res.status(response.status).json(body.error);
+        return res.status(response.status).json(body);
       } else {
         return res.status(response.status).end(response.statusText);
       }
