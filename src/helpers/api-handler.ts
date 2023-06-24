@@ -32,6 +32,10 @@ export async function apiHandler({
       }
     }
 
+    if (response.status === 204) {
+      return res.status(204).end();
+    }
+
     const { data } = await response.json();
     return res.status(200).json(data);
   } else {
