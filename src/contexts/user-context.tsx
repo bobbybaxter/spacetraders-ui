@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import firebase from '../pages/api/firebase';
+import firebase from './firebase';
 
 interface AuthContextProps {
   authenticated: boolean;
