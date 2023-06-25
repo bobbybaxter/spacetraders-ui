@@ -1,5 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { apiHandler } from '@/helpers/api-handler';
 
 export default async function handler(
   req: NextApiRequest,

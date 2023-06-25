@@ -36,7 +36,13 @@ export async function apiHandler({
       return res.status(204).end();
     }
 
-    const { data } = await response.json();
+    const resJson = await response.json();
+
+    if (!resJson.data) {
+      return res.status(200).json(resJson);
+    }
+
+    const { data } = resJson;
     return res.status(200).json(data);
   } else {
     res.setHeader('Allow', allowedMethods);
