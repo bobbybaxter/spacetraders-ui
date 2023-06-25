@@ -2,7 +2,7 @@
 import firebase from 'firebase/compat/app';
 import type { NextPage } from 'next';
 import StyledFirebaseAuth from '@/components/StyledFirebaseAuth';
-import app from '@/pages/api/firebase';
+import app from '@/contexts/firebase';
 
 const auth = app.auth();
 
