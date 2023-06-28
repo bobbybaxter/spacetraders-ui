@@ -1,25 +1,15 @@
 import './globals.css';
 import type { AppProps } from 'next/app';
 import dynamic from 'next/dynamic';
-import { Bai_Jamjuree } from 'next/font/google';
-import SidebarNav from '@/components/SidebarNav/SidebarNav';
+import Navbar from '@/components/Navbar/Navbar';
 import { AuthProvider } from '@/contexts/user-context';
-
-const baiJamjuree = Bai_Jamjuree({
-  weight: '200',
-  subsets: ['latin'],
-});
+import { baiJamjuree, spaceMono } from '@/helpers/fonts';
 
 const App = ({ Component, pageProps }: AppProps) => {
   return (
-    <main className={baiJamjuree.className}>
-      {/* <style jsx global>{`
-        table {
-          font-family: ${baiJamjuree.style.fontFamily};
-        }
-      `}</style> */}
+    <main className={`dark ${spaceMono.variable} ${baiJamjuree.variable} `}>
       <AuthProvider>
-        <SidebarNav />
+        <Navbar />
         <Component {...pageProps} />
       </AuthProvider>
     </main>

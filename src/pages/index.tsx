@@ -8,18 +8,18 @@ type HomeProps = { agentDetails: AgentDetails };
 
 const Home: NextPage<HomeProps> = ({ agentDetails }) => {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-between p-16">
+    <div className="flex min-h-screen flex-col items-start justify-between p-16">
+      <Head>
+        <title>Saia Spacetraders</title>
+        <meta name="description" content="Saia Spacetraders" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
       <div
         className={clsx(
           'z-10 w-full max-w-5xl items-center justify-between',
           'font-mono text-sm lg:flex'
         )}
       >
-        <Head>
-          <title>Saia Spacetraders</title>
-          <meta name="description" content="Saia Spacetraders" />
-          <link rel="icon" href="/favicon.ico" />
-        </Head>
         <AgentDetailsViewer agentDetails={agentDetails} />
       </div>
     </div>
