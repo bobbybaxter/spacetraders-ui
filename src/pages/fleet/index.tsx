@@ -2,7 +2,8 @@
 import clsx from 'clsx';
 import type { NextPage } from 'next';
 import Head from 'next/head';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import useSWR from 'swr';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
@@ -11,16 +12,38 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { camelToSnakeCase } from '@/helpers/camel-to-snake-case';
-import printDelimiter from '@/helpers/print-delimiter';
+import {
+  camelToSnakeCase,
+  fetcher,
+  printDelimiter,
+  ssrResponseHandler,
+} from '@/helpers/index';
 import shipActionsCard from './ship-actions-card';
+import shipLocationCard from './ship-location-card';
 import shipStatusCard from './ship-status-card';
 
-type HomeProps = { ships: Ship[] };
+type HomeProps = { ships: Ship[]; waypoint: Waypoint };
 
 // TODO: have a selected ship state of All
+
+// FIXME: remove waypoint from serverside props, because we need
+//  it to update when we change ships
 const Fleet: NextPage<HomeProps> = ({ ships }) => {
   const [selectedShip, setSelectedShip] = useState<Ship | undefined>(ships[0]);
+  const [isLoading, setIsLoading] = useState(false);
+  const { data: waypoint, error: waypointError } = useSWR<Waypoint, Error>(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/systems/${selectedShip?.nav.systemSymbol}/waypoints/${selectedShip?.nav.waypointSymbol}`,
+    fetcher
+  );
+
+  useEffect(() => {
+    setIsLoading(true);
+    setIsLoading(false);
+  }, [selectedShip]);
+
+  if (isLoading) {
+    return <p>Loading...</p>;
+  }
 
   function updateShip(selectShipSymbol: string) {
     setSelectedShip(ships.find((ship) => ship.symbol === selectShipSymbol));
@@ -85,18 +108,18 @@ const Fleet: NextPage<HomeProps> = ({ ships }) => {
     );
   }
 
-  function shipModuleCard(key: string, module: ShipModule) {
-    return (
-      <tr key={key}>
-        <td className="text-muted-foreground-darker pr-3 align-top">{key}</td>
-        <td>
-          <p>
-            {module.type} {printDelimiter()} {module.name}
-          </p>
-        </td>
-      </tr>
-    );
-  }
+  // function shipModuleCard(key: string, module: ShipModule) {
+  //   return (
+  //     <tr key={key}>
+  //       <td className="text-muted-foreground-darker pr-3 align-top">{key}</td>
+  //       <td>
+  //         <p>
+  //           {module.type} {printDelimiter()} {module.name}
+  //         </p>
+  //       </td>
+  //     </tr>
+  //   );
+  // }
 
   function buildCard(title: string, content: any, inner = false) {
     function printContentAsTable(content: any) {
@@ -173,9 +196,12 @@ const Fleet: NextPage<HomeProps> = ({ ships }) => {
           </div>
 
           {/* TODO: change to flex-column when screen is smaller */}
-          <div className="wrap flex flex-row gap-3">
-            {/* SHIP STATUS */}
-            {selectedShip && shipStatusCard(selectedShip)}
+          <div className="wrap flex flex-col gap-3 lg:flex-row">
+            <div className="wrap flex flex-col gap-3">
+              {/* SHIP STATUS */}
+              {selectedShip && shipStatusCard(selectedShip)}
+              {waypoint && shipLocationCard(waypoint)}
+            </div>
 
             {/* SHIP ACTIONS */}
             {selectedShip && shipActionsCard(selectedShip)}
@@ -202,18 +228,9 @@ const Fleet: NextPage<HomeProps> = ({ ships }) => {
 };
 
 export async function getServerSideProps() {
-  const shipsRes = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/my/ships`,
-    {
-      method: 'GET',
-    }
-  );
-
-  if (shipsRes.status !== 200) {
-    throw new Error(`Error: ${shipsRes.status}`);
-  }
-
-  const ships: Ship[] = await shipsRes.json();
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+  const shipsRes = await fetch(`${baseUrl}/api/my/ships`);
+  const ships: Ship[] = await ssrResponseHandler(shipsRes);
 
   return { props: { ships } };
 }

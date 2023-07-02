@@ -14,6 +14,12 @@ interface AgentDetails {
   startingFaction: string;
 }
 
+interface Chart {
+  waypointSymbol: string;
+  submittedBy: string;
+  submittedOn: Date;
+}
+
 interface Ship {
   symbol: string;
   registration: ShipRegistration;
@@ -75,7 +81,7 @@ interface ShipFuel {
   capacity: number;
   consumed: {
     amount: number;
-    timestamp: string;
+    timestamp: Date;
   };
 }
 
@@ -108,8 +114,8 @@ interface ShipMount {
 interface ShipNavRoute {
   destination: ShipNavRouteWaypoint;
   departure: ShipNavRouteWaypoint;
-  departureTime: string;
-  arrival: string;
+  departureTime: Date;
+  arrival: Date;
 }
 
 interface ShipNavRouteWaypoint {
@@ -139,4 +145,26 @@ interface ShipRequirements {
   crew: number;
   power?: number;
   slots?: number;
+}
+
+interface Waypoint {
+  symbol: string;
+  type: string;
+  systemSymbol: string;
+  x: number;
+  y: number;
+  orbitals: string[];
+  faction: WaypointFaction;
+  traits: WaypointTrait[];
+  chart: Chart;
+}
+
+interface WaypointFaction {
+  symbol: string;
+}
+
+interface WaypointTrait {
+  symbol: string;
+  name: string;
+  description: string;
 }

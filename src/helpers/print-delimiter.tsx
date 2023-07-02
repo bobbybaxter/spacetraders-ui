@@ -1,4 +1,4 @@
 /* eslint-disable react/jsx-no-comment-textnodes */
-export default function printDelimiter() {
+export function printDelimiter() {
   return <span className="delimiter"> // </span>;
 }
