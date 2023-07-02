@@ -192,6 +192,7 @@ const Fleet: NextPage<HomeProps> = ({ agent, contracts, ships }) => {
             <div className="wrap flex flex-col gap-3">
               {/* SHIP STATUS */}
               {selectedShip && shipStatusCard(selectedShip)}
+              {/* SHIP LOCATION */}
               {waypoint && shipLocationCard(waypoint)}
             </div>
 
@@ -208,7 +209,7 @@ const Fleet: NextPage<HomeProps> = ({ agent, contracts, ships }) => {
               })}
           </div>
 
-          {/* SHIP DETAILS */}
+          {/* MISC DETAILS */}
           <div>
             <h2 className="text-muted-foreground">MISC DETAILS</h2>
           </div>

@@ -11,10 +11,6 @@
   color: hsl(var(--muted-foreground-lighter));
 }
 
-/* .delimiter {
-  color: hsl(var(--text-slate-600)) !important;
-} */
-
 @layer base {
   :root {
     --background: 0 0% 100%;
