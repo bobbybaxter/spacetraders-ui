@@ -2,7 +2,7 @@
 import clsx from 'clsx';
 import type { NextPage } from 'next';
 import Head from 'next/head';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import useSWR from 'swr';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -22,28 +22,20 @@ import shipActionsCard from './ship-actions-card';
 import shipLocationCard from './ship-location-card';
 import shipStatusCard from './ship-status-card';
 
-type HomeProps = { ships: Ship[]; waypoint: Waypoint };
+type HomeProps = { agent: Agent; contracts: Contract[]; ships: Ship[] };
 
 // TODO: have a selected ship state of All
 
-// FIXME: remove waypoint from serverside props, because we need
-//  it to update when we change ships
-const Fleet: NextPage<HomeProps> = ({ ships }) => {
+const Fleet: NextPage<HomeProps> = ({ agent, contracts, ships }) => {
   const [selectedShip, setSelectedShip] = useState<Ship | undefined>(ships[0]);
-  const [isLoading, setIsLoading] = useState(false);
   const { data: waypoint, error: waypointError } = useSWR<Waypoint, Error>(
     `${process.env.NEXT_PUBLIC_API_URL}/api/systems/${selectedShip?.nav.systemSymbol}/waypoints/${selectedShip?.nav.waypointSymbol}`,
     fetcher
   );
-
-  useEffect(() => {
-    setIsLoading(true);
-    setIsLoading(false);
-  }, [selectedShip]);
-
-  if (isLoading) {
-    return <p>Loading...</p>;
-  }
+  const { data: market, error: marketError } = useSWR<Market, Error>(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/systems/${selectedShip?.nav.systemSymbol}/waypoints/${selectedShip?.nav.waypointSymbol}/market`,
+    fetcher
+  );
 
   function updateShip(selectShipSymbol: string) {
     setSelectedShip(ships.find((ship) => ship.symbol === selectShipSymbol));
@@ -204,7 +196,16 @@ const Fleet: NextPage<HomeProps> = ({ ships }) => {
             </div>
 
             {/* SHIP ACTIONS */}
-            {selectedShip && shipActionsCard(selectedShip)}
+            {selectedShip &&
+              waypoint &&
+              market &&
+              shipActionsCard({
+                agent,
+                contracts,
+                market,
+                ship: selectedShip,
+                waypoint,
+              })}
           </div>
 
           {/* SHIP DETAILS */}
@@ -229,10 +230,16 @@ const Fleet: NextPage<HomeProps> = ({ ships }) => {
 
 export async function getServerSideProps() {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL;
-  const shipsRes = await fetch(`${baseUrl}/api/my/ships`);
+  const [agentRes, contractRes, shipsRes] = await Promise.all([
+    await fetch(`${baseUrl}/api/my/agent`),
+    await fetch(`${baseUrl}/api/my/contracts`),
+    await fetch(`${baseUrl}/api/my/ships`),
+  ]);
   const ships: Ship[] = await ssrResponseHandler(shipsRes);
+  const contracts: Contract[] = await ssrResponseHandler(contractRes);
+  const agent: Agent = await ssrResponseHandler(agentRes);
 
-  return { props: { ships } };
+  return { props: { ships, contracts, agent } };
 }
 
 export default Fleet;

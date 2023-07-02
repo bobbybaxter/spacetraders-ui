@@ -1,22 +1,88 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  jumpDrives,
+  refineries,
+  sensorArrays,
+  warpDrives,
+} from '@/helpers/constants';
 
-export default function ShipActionsCard({ nav }: Ship) {
-  const [wayPoint, setWaypoint] = useState<string | undefined>(undefined);
-  const isInOrbit = nav.status === 'ORBIT';
-  const isInTransit = nav.status === 'IN_TRANSIT';
-  const isDocked = nav.status === 'DOCKED';
-  const isInAsteroidField = nav.route.destination.type === 'ASTEROID_FIELD';
+function printButtonRow(title: string, buttons: any) {
+  let hideRow = false;
 
-  function printButtonRow(title: string, buttons: any) {
-    return (
-      <div className="flex flex-row gap-3">
-        <h4 className="basis-1/6">{title}</h4>
-        <div className="flex basis-3/4 flex-row flex-wrap gap-3">{buttons}</div>
-      </div>
+  if (Array.isArray(buttons.props.children)) {
+    hideRow = buttons.props.children.every(
+      (child: React.JSX.Element | boolean) => child === false
     );
+  } else {
+    hideRow = !buttons.props.children;
   }
+
+  return hideRow ? (
+    ''
+  ) : (
+    <div className="flex flex-row gap-3">
+      <h4 className="basis-1/6">{title}</h4>
+      <div className="flex basis-3/4 flex-row flex-wrap gap-3">{buttons}</div>
+    </div>
+  );
+}
+
+export default function ShipActionsCard({
+  agent,
+  contracts,
+  market,
+  ship: { cargo, fuel, modules, mounts, nav },
+  waypoint,
+}: {
+  agent: Agent;
+  contracts: Contract[];
+  market: Market;
+  ship: Ship;
+  waypoint: Waypoint;
+}) {
+  const atAsteroidField = waypoint.traits.some(
+    (trait) => trait.symbol === 'ASTEROID_FIELD'
+  );
+  const atHq = nav.waypointSymbol === agent.headquarters;
+  const atJumpGate = waypoint.type === 'JUMP_GATE';
+  const atMarketplace = waypoint.traits.some(
+    (trait) => trait.symbol === 'MARKETPLACE'
+  );
+  const hasAntimatter = cargo.inventory.some(
+    (item) => item.symbol === 'ANTIMATTER'
+  );
+  const hasCargo = cargo.units > 0;
+  const hasCargoSpace = cargo.capacity - cargo.units > 0;
+  const hasContracts = contracts.length > 0;
+  const hasJumpDrive = modules.some((module) =>
+    jumpDrives.includes(module.symbol)
+  );
+  const hasMiningLaser = mounts.some(
+    (mount) => mount.symbol === 'MINING_LASER'
+  );
+  const hasRefinery = modules.some((module) =>
+    refineries.includes(module.symbol)
+  );
+  const hasSensorArray = mounts.some((mount) =>
+    sensorArrays.includes(mount.symbol)
+  );
+  const hasWarpDrive = modules.some((module) =>
+    warpDrives.includes(module.symbol)
+  );
+  const isInOrbit = nav.status === 'ORBIT';
+  const isDocked = nav.status === 'DOCKED';
+  const isUncharted = waypoint.traits.some(
+    (trait) => trait.symbol === 'UNCHARTED'
+  );
+  const needsFuel = fuel.current <= fuel.capacity - 100;
+  const sellsFuel = market
+    ? market.tradeGoods.some((tradeGoods) => tradeGoods.symbol === 'FUEL')
+    : false;
+
+  const canJump =
+    isInOrbit && atJumpGate ? true : hasJumpDrive && hasAntimatter;
 
   return (
     <Card className="w-full">
@@ -28,73 +94,77 @@ export default function ShipActionsCard({ nav }: Ship) {
           'NAV',
           <>
             {isInOrbit && <Button variant="outline">Dock</Button>}
-            {/* TODO: select which flight mode to change to */}
-            <Button variant="outline">Change Flight Mode</Button>
-            {/* TODO: hide if ship doesn't have requirement materials */}
-            {/* TODO: select location to jump to */}
-            <Button variant="outline">Jump</Button>
-            {/* TODO: select location to navigate to */}
-            {!isInTransit && <Button variant="outline">Navigate</Button>}
             {isDocked && <Button variant="outline">Orbit</Button>}
-            {/* TODO: hide if in transit or docked at a location without a fuel market */}
-            <Button variant="outline">Refuel</Button>
-            {/* TODO: hide if ship doesn't have a warp drive */}
+            {isDocked && needsFuel && sellsFuel && (
+              <Button variant="outline">Refuel</Button>
+            )}
+            {/* TODO: select location to navigate to and try to calculate fuel costs*/}
+            {isInOrbit && <Button variant="outline">Navigate</Button>}
+            {/* TODO: select location to jump to */}
+            {canJump && <Button variant="outline">Jump</Button>}
             {/* TODO: disable if ship doesn't have enough fuel to complete warp */}
             {/* TODO: select location to warp to */}
-            <Button variant="outline">Warp</Button>
+            {isInOrbit && hasWarpDrive && (
+              <Button variant="outline">Warp</Button>
+            )}
+            {/* TODO: select which flight mode to change to */}
+            <Button variant="outline">Change Flight Mode</Button>
           </>
         )}
 
         {printButtonRow(
           'CHART',
           <>
-            {/* TODO: hide if waypoint is already charted*/}
-            <Button variant="outline">Chart</Button>
-            {/* TODO: hide if ship doesn't have sensor array */}
+            {isUncharted && <Button variant="outline">Chart</Button>}
             {/* TODO: work on the backend to capture this data */}
-            <Button variant="outline">Scan Ships</Button>
-            <Button variant="outline">Scan Systems</Button>
-            <Button variant="outline">Scan Waypoints</Button>
+            {hasSensorArray && <Button variant="outline">Scan Ships</Button>}
+            {hasSensorArray && <Button variant="outline">Scan Systems</Button>}
+            {hasSensorArray && (
+              <Button variant="outline">Scan Waypoints</Button>
+            )}
           </>
         )}
 
         {printButtonRow(
           'MINE',
           <>
-            {/* TODO: hide if not in asteroid field */}
             {/* TODO: select which minerals to extract */}
-            {isInOrbit && isInAsteroidField && (
+            {/* TODO: determine which types of minerals that can be extracted based on Gas Siphon or Mining Laser */}
+            {isInOrbit && atAsteroidField && hasMiningLaser && (
               <Button variant="outline">Extract</Button>
             )}
             {/* TODO: hide if no cargo, no refiner, or no refinery materials */}
-            <Button variant="outline">Refine</Button>
+            {hasRefinery && hasCargo && (
+              <Button variant="outline">Refine</Button>
+            )}
             {/* TODO: work on storing the survey information for extraction */}
-            {isInAsteroidField && <Button variant="outline">Survey</Button>}
+            {atAsteroidField && <Button variant="outline">Survey</Button>}
           </>
         )}
 
         {printButtonRow(
           'CARGO',
           <>
-            {/* TODO: hide if nothing in cargo */}
             {/* TODO: select which cargo to jettison */}
-            <Button variant="outline">Jettison</Button>
-            {/* TODO: hide if not at a planet with a market */}
-            <Button variant="outline">Purchase Cargo</Button>
-            {/* TODO: hide if nothing in cargo or not docked at marketplace*/}
+            {hasCargo && <Button variant="outline">Jettison</Button>}
+            {atMarketplace && hasCargoSpace && (
+              <Button variant="outline">Purchase Cargo</Button>
+            )}
             {/* TODO: select which cargo to sell*/}
-            <Button variant="outline">Sell Cargo</Button>
-            {/* TODO: hide if not docked in the same location as the receiving ship */}
-            <Button variant="outline">Transfer</Button>
+            {atMarketplace && hasCargo && (
+              <Button variant="outline">Sell Cargo</Button>
+            )}
+            {/* TODO: select the ship to transfer with */}
+            {isDocked && <Button variant="outline">Transfer</Button>}
           </>
         )}
 
         {printButtonRow(
           'WORK',
           <>
-            {/* TODO: hide if there is already a contract */}
-            {/* TODO: hide if not at faction HQ */}
-            <Button variant="outline">Negotiate</Button>
+            {atHq && !hasContracts && (
+              <Button variant="outline">Negotiate</Button>
+            )}
           </>
         )}
       </CardContent>

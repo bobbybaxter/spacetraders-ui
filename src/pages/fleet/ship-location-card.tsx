@@ -35,7 +35,6 @@ export default function shipLocationCard({
   x,
   y,
   traits,
-  chart,
 }: Waypoint) {
   return (
     <div>
@@ -47,13 +46,10 @@ export default function shipLocationCard({
           {printRow('symbol', [symbol])}
           {printRow('type', [type])}
           {printRow('coordinates', [`${x}, ${y}`])}
-          {/* {printRow('orbitals', orbitals)} */}
           {printRow(
             'traits',
             traits.map((x) => x.symbol)
           )}
-          {/* {printRow('status', nav.status)} */}
-          {/* {printRow('flight_mode', nav.flightMode)} */}
         </CardContent>
       </Card>
     </div>

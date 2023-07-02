@@ -20,6 +20,63 @@ interface Chart {
   submittedOn: Date;
 }
 
+interface Contract {
+  id: string;
+  factionSymbol: string;
+  type: string;
+  terms: ContractTerms;
+  accepted: boolean;
+  fulfilled: boolean;
+  expiration: Date;
+  deadlineToAccept: Date;
+}
+
+interface ContractDeliverGood {
+  tradeSymbol: string;
+  destinalSymbol: string;
+  unitsRequired: number;
+  unitsFulfilled: number;
+}
+
+interface ContractPayment {
+  onAccepted: number;
+  onFulfilled: number;
+}
+
+interface ContractTerms {
+  deadline: Date;
+  payment: ContractPayment;
+  deliver: ContractDeliverGood[];
+}
+
+interface Market {
+  symbol: string;
+  exports: TradeGood[];
+  imports: TradeGood[];
+  exchange: TradeGood[];
+  transactions: MarketTransaction[];
+  tradeGoods: MarketTradeGood[];
+}
+
+interface MarketTradeGood {
+  symbol: string;
+  tradeVolume: number;
+  supply: string;
+  purchasePrice: number;
+  sellPrice: number;
+}
+
+interface MarketTransaction {
+  waypointSymbol: string;
+  shipSymbol: string;
+  tradeSymbol: string;
+  type: string;
+  units: number;
+  pricePerUnit: number;
+  totalPrice: number;
+  timestamp: Date;
+}
+
 interface Ship {
   symbol: string;
   registration: ShipRegistration;
@@ -145,6 +202,12 @@ interface ShipRequirements {
   crew: number;
   power?: number;
   slots?: number;
+}
+
+interface TradeGood {
+  symbol: string;
+  name: string;
+  description: string;
 }
 
 interface Waypoint {
