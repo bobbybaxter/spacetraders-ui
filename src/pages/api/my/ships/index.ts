@@ -15,7 +15,7 @@ export default async function handler(
   }
 
   await apiHandler({
-    allowedMethods: ['GET, POST'],
+    allowedMethods: ['GET', 'POST'],
     body,
     method,
     res,

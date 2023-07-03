@@ -1,9 +1,10 @@
 import Document, { Head, Html, Main, NextScript } from 'next/document';
+import { baiJamjuree, spaceMono } from '@/helpers/fonts';
 
 class MyDocument extends Document {
   render() {
     return (
-      <Html className="dark">
+      <Html className={`dark ${spaceMono.variable} ${baiJamjuree.variable} `}>
         <Head>
           <link
             rel="stylesheet"
