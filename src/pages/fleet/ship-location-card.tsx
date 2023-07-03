@@ -23,7 +23,7 @@ function printRow(title: string, valueArray: string[]) {
   }
   return (
     <div className="flex flex-row">
-      <div className="text-muted-foreground-darker w-[100px]">{title}</div>
+      <div className="w-[100px] text-muted-foreground-darker">{title}</div>
       <div className="flex flex-col">{printValueRows(valueArray)}</div>
     </div>
   );

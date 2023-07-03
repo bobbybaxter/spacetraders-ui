@@ -58,7 +58,9 @@ const Fleet: NextPage<HomeProps> = ({ agent, contracts, ships }) => {
     return (
       <>
         {value}{' '}
-        <span className="pl-1 text-muted-foreground">{displayTitle}</span>
+        <span className="pl-1 text-muted-foreground">
+          {displayTitle || title}
+        </span>
       </>
     );
   }
@@ -69,11 +71,11 @@ const Fleet: NextPage<HomeProps> = ({ agent, contracts, ships }) => {
   ) {
     return (
       <tr key={key}>
-        <td className="text-muted-foreground-darker pr-3 align-top">{key}</td>
+        <td className="pr-3 align-top text-muted-foreground-darker">{key}</td>
         <td>
           <p>
-            {crew && listItem('crew', crew)}
-            {power || slots ? printDelimiter() : ''}
+            {crew > 0 && listItem('crew', crew)}
+            {crew > 0 && (power || slots) ? printDelimiter() : ''}
             {power && listItem('power', power)}
             {slots && printDelimiter()}
             {slots && listItem('slots', slots)}
@@ -98,6 +100,10 @@ const Fleet: NextPage<HomeProps> = ({ agent, contracts, ships }) => {
         </td>
       </tr>
     );
+  }
+
+  function moduleCard(module: ShipModule | ShipMount) {
+    return <>{buildCard('', module)}</>;
   }
 
   // function shipModuleCard(key: string, module: ShipModule) {
@@ -126,7 +132,7 @@ const Fleet: NextPage<HomeProps> = ({ agent, contracts, ships }) => {
 
         return (
           <tr key={key}>
-            <td className="text-muted-foreground-darker p-0 pr-3 align-top">
+            <td className="p-0 pr-3 align-top text-muted-foreground-darker">
               {camelToSnakeCase(key)}
             </td>
             {typeof value === 'string' || typeof value === 'number' ? (
@@ -209,6 +215,24 @@ const Fleet: NextPage<HomeProps> = ({ agent, contracts, ships }) => {
               })}
           </div>
 
+          {/* MODULES */}
+          <div>
+            <h2 className="text-muted-foreground">MODULES</h2>
+            <div className="flex w-full flex-row flex-wrap gap-3">
+              {selectedShip?.modules &&
+                selectedShip.modules.map((module) => moduleCard(module))}
+            </div>
+          </div>
+
+          {/* MOUNTS */}
+          <div>
+            <h2 className="text-muted-foreground">MOUNTS</h2>
+            <div className="flex w-full flex-row flex-wrap gap-3">
+              {selectedShip?.mounts &&
+                selectedShip.mounts.map((mount) => moduleCard(mount))}
+            </div>
+          </div>
+
           {/* MISC DETAILS */}
           <div>
             <h2 className="text-muted-foreground">MISC DETAILS</h2>
@@ -219,9 +243,6 @@ const Fleet: NextPage<HomeProps> = ({ agent, contracts, ships }) => {
             {buildCard('Reactor', selectedShip?.reactor)}
             {buildCard('Frame', selectedShip?.frame)}
             {buildCard('Engine', selectedShip?.engine)}
-            {buildCard('Nav', selectedShip?.nav)}
-            {buildCard('Mounts', selectedShip?.mounts)}
-            {buildCard('Modules', selectedShip?.modules)}
           </div>
         </div>
       </div>

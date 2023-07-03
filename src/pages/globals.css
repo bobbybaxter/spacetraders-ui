@@ -3,13 +3,13 @@
 @tailwind components;
 @tailwind utilities;
 
-.text-muted-foreground-darker {
+/* .text-muted-foreground-darker {
   color: hsl(var(--muted-foreground-darker));
 }
 
 .text-muted-foreground-lighter {
   color: hsl(var(--muted-foreground-lighter));
-}
+} */
 
 @layer base {
   :root {
@@ -127,7 +127,7 @@
     @apply m-0 border-t p-0 even:bg-muted-darker;
   }
   td {
-    @apply px-4 py-2 text-left;
+    @apply py-2 text-left;
   }
   td[align='center'] {
     @apply text-center;
