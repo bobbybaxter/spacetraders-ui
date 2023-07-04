@@ -23,8 +23,10 @@ function printButtonRow(title: string, buttons: any) {
     ''
   ) : (
     <div className="flex flex-row gap-3">
-      <h4 className="basis-1/6">{title}</h4>
-      <div className="flex basis-3/4 flex-row flex-wrap gap-3">{buttons}</div>
+      <h4 className="w-1/4 md:basis-1/6">{title}</h4>
+      <div className="flex w-3/4 flex-row flex-wrap gap-3 md:basis-3/4">
+        {buttons}
+      </div>
     </div>
   );
 }
@@ -32,13 +34,17 @@ function printButtonRow(title: string, buttons: any) {
 export default function ShipActionsCard({
   agent,
   contracts,
+  dockHandler,
   market,
-  ship: { cargo, fuel, modules, mounts, nav },
+  orbitHandler,
+  ship: { cargo, fuel, modules, mounts, nav, symbol },
   waypoint,
 }: {
   agent: Agent;
   contracts: Contract[];
+  dockHandler: () => void;
   market: Market;
+  orbitHandler: () => void;
   ship: Ship;
   waypoint: Waypoint;
 }) {
@@ -71,7 +77,7 @@ export default function ShipActionsCard({
   const hasWarpDrive = modules.some((module) =>
     warpDrives.includes(module.symbol)
   );
-  const isInOrbit = nav.status === 'ORBIT';
+  const isInOrbit = nav.status === 'IN_ORBIT';
   const isDocked = nav.status === 'DOCKED';
   const isUncharted = waypoint.traits.some(
     (trait) => trait.symbol === 'UNCHARTED'
@@ -93,8 +99,16 @@ export default function ShipActionsCard({
         {printButtonRow(
           'NAV',
           <>
-            {isInOrbit && <Button variant="outline">Dock</Button>}
-            {isDocked && <Button variant="outline">Orbit</Button>}
+            {isInOrbit && (
+              <Button variant="outline" onClick={dockHandler}>
+                Dock
+              </Button>
+            )}
+            {isDocked && (
+              <Button variant="outline" onClick={orbitHandler}>
+                Orbit
+              </Button>
+            )}
             {isDocked && needsFuel && sellsFuel && (
               <Button variant="outline">Refuel</Button>
             )}
