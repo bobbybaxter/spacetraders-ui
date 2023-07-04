@@ -3,14 +3,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* .text-muted-foreground-darker {
-  color: hsl(var(--muted-foreground-darker));
-}
-
-.text-muted-foreground-lighter {
-  color: hsl(var(--muted-foreground-lighter));
-} */
-
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -93,7 +85,7 @@
     width: fit-content;
   }
   h1 {
-    @apply scroll-m-20 font-sans text-4xl font-thin tracking-wide lg:text-5xl;
+    @apply scroll-m-20 font-sans text-5xl font-thin tracking-wide;
   }
   h2 {
     @apply scroll-m-20 border-b pb-2 font-sans text-3xl font-thin tracking-wide transition-colors first:mt-0;
@@ -124,7 +116,7 @@
     @apply text-right;
   }
   tr {
-    @apply m-0 border-t p-0 even:bg-muted-darker;
+    @apply m-0 p-0 even:bg-muted-darker;
   }
   td {
     @apply py-2 text-left;

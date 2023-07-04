@@ -2,7 +2,8 @@
 import clsx from 'clsx';
 import type { NextPage } from 'next';
 import Head from 'next/head';
-import React, { useState } from 'react';
+import { useRouter } from 'next/router';
+import React, { useEffect, useState } from 'react';
 import useSWR from 'swr';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -22,23 +23,72 @@ import shipActionsCard from './ship-actions-card';
 import shipLocationCard from './ship-location-card';
 import shipStatusCard from './ship-status-card';
 
-type HomeProps = { agent: Agent; contracts: Contract[]; ships: Ship[] };
+const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+const agentUrl = `${baseUrl}/api/my/agent`;
+const contractsUrl = `${baseUrl}/api/my/contracts`;
+const shipsUrl = `${baseUrl}/api/my/ships`;
 
 // TODO: have a selected ship state of All
 
-const Fleet: NextPage<HomeProps> = ({ agent, contracts, ships }) => {
-  const [selectedShip, setSelectedShip] = useState<Ship | undefined>(ships[0]);
-  const { data: waypoint, error: waypointError } = useSWR<Waypoint, Error>(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/systems/${selectedShip?.nav.systemSymbol}/waypoints/${selectedShip?.nav.waypointSymbol}`,
+const Fleet: NextPage = () => {
+  const [selectedShip, setSelectedShip] = useState<Ship>();
+  const { data: agent } = useSWR<Agent, Error>(agentUrl, fetcher);
+  const { data: contracts } = useSWR<Contract[], Error>(contractsUrl, fetcher);
+  const { data: ships, mutate: refetchShips } = useSWR<Ship[], Error>(
+    shipsUrl,
     fetcher
   );
-  const { data: market, error: marketError } = useSWR<Market, Error>(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/systems/${selectedShip?.nav.systemSymbol}/waypoints/${selectedShip?.nav.waypointSymbol}/market`,
+  const { data: waypoint } = useSWR<Waypoint, Error>(
+    selectedShip
+      ? `${baseUrl}/api/systems/${selectedShip.nav.systemSymbol}/waypoints/${selectedShip.nav.waypointSymbol}`
+      : null,
+    fetcher
+  );
+  const { data: market } = useSWR<Market, Error>(
+    selectedShip
+      ? `${baseUrl}/api/systems/${selectedShip.nav.systemSymbol}/waypoints/${selectedShip.nav.waypointSymbol}/market`
+      : null,
     fetcher
   );
 
+  const router = useRouter();
+
+  useEffect(() => {
+    if (ships) {
+      setSelectedShip(ships[0]);
+    }
+  }, [ships]);
+
+  function refreshData() {
+    router.replace(router.asPath);
+  }
+
+  async function dockHandler() {
+    const res = await fetch(
+      `${baseUrl}/api/my/ships/${selectedShip?.symbol}/dock`,
+      { method: 'POST' }
+    );
+
+    const { nav } = await ssrResponseHandler(res);
+    setSelectedShip({ ...(selectedShip as Ship), nav });
+  }
+
+  async function orbitHandler() {
+    const res = await fetch(
+      `${baseUrl}/api/my/ships/${selectedShip?.symbol}/orbit`,
+      { method: 'POST' }
+    );
+
+    const { nav } = await ssrResponseHandler(res);
+    setSelectedShip({ ...(selectedShip as Ship), nav });
+  }
+
+  if (!agent || !contracts || !ships || !waypoint || !market) {
+    return <div>Loading...</div>;
+  }
+
   function updateShip(selectShipSymbol: string) {
-    setSelectedShip(ships.find((ship) => ship.symbol === selectShipSymbol));
+    setSelectedShip(ships?.find((ship) => ship.symbol === selectShipSymbol));
   }
 
   const DropdownList = ships.map((ship) => {
@@ -71,8 +121,10 @@ const Fleet: NextPage<HomeProps> = ({ agent, contracts, ships }) => {
   ) {
     return (
       <tr key={key}>
-        <td className="pr-3 align-top text-muted-foreground-darker">{key}</td>
-        <td>
+        <td className="p-0 pr-3 align-top text-muted-foreground-darker">
+          {key}
+        </td>
+        <td className="p-0">
           <p>
             {crew > 0 && listItem('crew', crew)}
             {crew > 0 && (power || slots) ? printDelimiter() : ''}
@@ -89,11 +141,11 @@ const Fleet: NextPage<HomeProps> = ({ agent, contracts, ships }) => {
     key: string,
     { symbol, type, x, y }: ShipNavRouteWaypoint
   ) {
-    const tdKeyClass = 'text-muted-foreground pr-3 align-top';
+    const tdKeyClass = 'p-0 text-muted-foreground pr-3 align-top';
     return (
       <tr>
         <td className={tdKeyClass}>{key}</td>
-        <td>
+        <td className="p-0">
           <span>
             {x}, {y} {printDelimiter()} {type} {printDelimiter()} {symbol}
           </span>
@@ -102,8 +154,12 @@ const Fleet: NextPage<HomeProps> = ({ agent, contracts, ships }) => {
     );
   }
 
-  function moduleCard(module: ShipModule | ShipMount) {
-    return <>{buildCard('', module)}</>;
+  function moduleCard(module: ShipModule | ShipMount, index: number) {
+    return (
+      <div className="w-[390px]" key={`${module.symbol}_${index}`}>
+        {buildCard('', module)}
+      </div>
+    );
   }
 
   // function shipModuleCard(key: string, module: ShipModule) {
@@ -147,17 +203,23 @@ const Fleet: NextPage<HomeProps> = ({ agent, contracts, ships }) => {
 
     if (!inner) {
       return (
-        <Card className="max-h-min">
+        <Card className="background-pattern h-full">
           <CardHeader>
             <CardTitle>{title.toUpperCase()}</CardTitle>
           </CardHeader>
           <CardContent>
-            <tbody>{printContentAsTable(content)}</tbody>
+            <table>
+              <tbody>{printContentAsTable(content)}</tbody>
+            </table>
           </CardContent>
         </Card>
       );
     } else {
-      return printContentAsTable(content);
+      return (
+        <table>
+          <tbody>{printContentAsTable(content)}</tbody>
+        </table>
+      );
     }
   }
 
@@ -185,7 +247,7 @@ const Fleet: NextPage<HomeProps> = ({ agent, contracts, ships }) => {
           </Select>
 
           {/* SHIP NAME */}
-          <div className="flex flex-row items-end">
+          <div className="flex flex-col sm:flex-row sm:items-end">
             <h1 className="mr-3">{selectedShip?.registration.name}</h1>
             <p className="text-base text-muted-foreground">
               {selectedShip?.registration.role} {printDelimiter()}{' '}
@@ -209,7 +271,9 @@ const Fleet: NextPage<HomeProps> = ({ agent, contracts, ships }) => {
               shipActionsCard({
                 agent,
                 contracts,
+                dockHandler,
                 market,
+                orbitHandler,
                 ship: selectedShip,
                 waypoint,
               })}
@@ -218,16 +282,18 @@ const Fleet: NextPage<HomeProps> = ({ agent, contracts, ships }) => {
           {/* MODULES */}
           <div>
             <h2 className="text-muted-foreground">MODULES</h2>
-            <div className="flex w-full flex-row flex-wrap gap-3">
+            <div className="mt-3 flex w-full flex-row flex-wrap gap-3">
               {selectedShip?.modules &&
-                selectedShip.modules.map((module) => moduleCard(module))}
+                selectedShip.modules.map((module, index) =>
+                  moduleCard(module, index)
+                )}
             </div>
           </div>
 
           {/* MOUNTS */}
           <div>
             <h2 className="text-muted-foreground">MOUNTS</h2>
-            <div className="flex w-full flex-row flex-wrap gap-3">
+            <div className="mt-3 flex w-full flex-row flex-wrap gap-3">
               {selectedShip?.mounts &&
                 selectedShip.mounts.map((mount) => moduleCard(mount))}
             </div>
@@ -236,32 +302,28 @@ const Fleet: NextPage<HomeProps> = ({ agent, contracts, ships }) => {
           {/* MISC DETAILS */}
           <div>
             <h2 className="text-muted-foreground">MISC DETAILS</h2>
-          </div>
-          <div className="flex w-full flex-row flex-wrap gap-3">
-            {buildCard('Cargo', selectedShip?.cargo)}
-            {buildCard('Crew', selectedShip?.crew)}
-            {buildCard('Reactor', selectedShip?.reactor)}
-            {buildCard('Frame', selectedShip?.frame)}
-            {buildCard('Engine', selectedShip?.engine)}
+            <div className="mt-3 flex w-full flex-row flex-wrap gap-3">
+              <div className="w-fit">
+                {buildCard('Cargo', selectedShip?.cargo)}
+              </div>
+              <div className="w-fit">
+                {buildCard('Crew', selectedShip?.crew)}
+              </div>
+              <div className="w-[400px]">
+                {buildCard('Reactor', selectedShip?.reactor)}
+              </div>
+              <div className="w-[400px]">
+                {buildCard('Frame', selectedShip?.frame)}
+              </div>
+              <div className="w-[400px]">
+                {buildCard('Engine', selectedShip?.engine)}
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
 };
-
-export async function getServerSideProps() {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
-  const [agentRes, contractRes, shipsRes] = await Promise.all([
-    await fetch(`${baseUrl}/api/my/agent`),
-    await fetch(`${baseUrl}/api/my/contracts`),
-    await fetch(`${baseUrl}/api/my/ships`),
-  ]);
-  const ships: Ship[] = await ssrResponseHandler(shipsRes);
-  const contracts: Contract[] = await ssrResponseHandler(contractRes);
-  const agent: Agent = await ssrResponseHandler(agentRes);
-
-  return { props: { ships, contracts, agent } };
-}
 
 export default Fleet;
