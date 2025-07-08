@@ -132,6 +132,15 @@
   }
 }
 
+.header-background {
+  background: linear-gradient(
+    to right,
+    hsla(215, 32.6%, 10%, 1) 50%,
+    hsla(222.2, 84%, 4.9%, 0) 90%
+  );
+  border-radius: 0.5rem 0.5rem 0 0;
+}
+
 .flicker1 {
   animation: text-flicker1 10s linear infinite;
 }

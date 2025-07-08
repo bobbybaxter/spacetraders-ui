@@ -204,14 +204,24 @@ const Fleet: NextPage = () => {
     if (!inner) {
       return (
         <Card className="background-pattern h-full">
-          <CardHeader>
-            <CardTitle>{title.toUpperCase()}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <table>
-              <tbody>{printContentAsTable(content)}</tbody>
-            </table>
-          </CardContent>
+          {title ? (
+            <>
+              <CardHeader className="header-background">
+                <CardTitle>{title.toUpperCase()}</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <table>
+                  <tbody>{printContentAsTable(content)}</tbody>
+                </table>
+              </CardContent>
+            </>
+          ) : (
+            <CardContent className="p-6">
+              <table>
+                <tbody>{printContentAsTable(content)}</tbody>
+              </table>
+            </CardContent>
+          )}
         </Card>
       );
     } else {

@@ -22,7 +22,7 @@ function printRow(title: string, valueArray: string[]) {
     });
   }
   return (
-    <div className="flex flex-row">
+    <div className="flex flex-row pl-6">
       <div className="w-[100px] text-muted-foreground-darker">{title}</div>
       <div className="flex flex-col">{printValueRows(valueArray)}</div>
     </div>
@@ -39,7 +39,7 @@ export default function shipLocationCard({
   return (
     <div>
       <Card>
-        <CardHeader>
+        <CardHeader className="header-background">
           <CardTitle>LOCATION</CardTitle>
         </CardHeader>
         <CardContent>

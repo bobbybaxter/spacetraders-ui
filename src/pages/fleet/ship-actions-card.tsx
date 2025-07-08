@@ -23,7 +23,7 @@ function printButtonRow(title: string, buttons: any) {
     ''
   ) : (
     <div className="flex flex-row gap-3">
-      <h4 className="w-1/4 md:basis-1/6">{title}</h4>
+      <h4 className="w-1/4 pl-6 md:basis-1/6">{title}</h4>
       <div className="flex w-3/4 flex-row flex-wrap gap-3 md:basis-3/4">
         {buttons}
       </div>
@@ -37,7 +37,7 @@ export default function ShipActionsCard({
   dockHandler,
   market,
   orbitHandler,
-  ship: { cargo, fuel, modules, mounts, nav, symbol },
+  ship: { cargo, fuel, modules, mounts, nav },
   waypoint,
 }: {
   agent: Agent;
@@ -92,7 +92,7 @@ export default function ShipActionsCard({
 
   return (
     <Card className="w-full">
-      <CardHeader>
+      <CardHeader className="header-background">
         <CardTitle>ACTIONS</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">

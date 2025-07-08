@@ -49,6 +49,13 @@ interface ContractTerms {
   deliver: ContractDeliverGood[];
 }
 
+interface Cooldown {
+  shipSymbol: string;
+  totalSeconds: number;
+  remainingSeconds: number;
+  expiration: Date;
+}
+
 interface Market {
   symbol: string;
   exports: TradeGood[];
@@ -75,6 +82,36 @@ interface MarketTransaction {
   pricePerUnit: number;
   totalPrice: number;
   timestamp: Date;
+}
+
+interface ScannedShip {
+  symbol: string;
+  registration: ShipRegistration;
+  nav: ShipNav;
+  frame: SymbolObject;
+  reactor: SymbolObject;
+  engine: SymbolObject;
+  mounts: SymbolObject[];
+}
+
+interface ScannedSystem {
+  symbol: string;
+  sectorSymbol: string;
+  type: string;
+  x: number;
+  y: number;
+  distance: number;
+}
+
+interface ScannedWaypoint {
+  symbol: string;
+  type: string;
+  systemSymbol: string;
+  x: number;
+  y: number;
+  orbitals: SymbolObject[];
+  faction: SymbolObject;
+  traits: WaypointTrait[];
 }
 
 interface Ship {
@@ -142,14 +179,6 @@ interface ShipFuel {
   };
 }
 
-interface ShipNav {
-  systemSymbol: string;
-  waypointSymbol: string;
-  route: ShipNavRoute;
-  status: string;
-  flightMode: string;
-}
-
 interface ShipModule {
   symbol: string;
   capacity: number;
@@ -166,6 +195,14 @@ interface ShipMount {
   strength: number;
   deposits: string[];
   requirements: ShipRequirements;
+}
+
+interface ShipNav {
+  systemSymbol: string;
+  waypointSymbol: string;
+  route: ShipNavRoute;
+  status: string;
+  flightMode: string;
 }
 
 interface ShipNavRoute {
@@ -204,6 +241,27 @@ interface ShipRequirements {
   slots?: number;
 }
 
+interface SymbolObject {
+  symbol: string;
+}
+
+interface System {
+  symbol: string;
+  sectorSymbol: string;
+  type: string;
+  x: number;
+  y: number;
+  waypoints: SystemWaypoint[];
+  factions: string[];
+}
+
+interface SystemWaypoint {
+  symbol: string;
+  type: string;
+  x: number;
+  y: number;
+}
+
 interface TradeGood {
   symbol: string;
   name: string;
@@ -217,13 +275,9 @@ interface Waypoint {
   x: number;
   y: number;
   orbitals: string[];
-  faction: WaypointFaction;
-  traits: WaypointTrait[];
+  faction: SymbolObject;
+  traits: SymbolObject[];
   chart: Chart;
-}
-
-interface WaypointFaction {
-  symbol: string;
 }
 
 interface WaypointTrait {
